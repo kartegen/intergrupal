@@ -1,0 +1,2 @@
+# intergrupal
+Perspectiva intergrupal
