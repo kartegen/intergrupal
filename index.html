@@ -4,12 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Perspectiva Intergrupalista</title>
+<!-- Fuentes de Google Fonts: Source Serif 4 (títulos) e IBM Plex Sans (texto). Necesitan internet; si no cargan se usan Georgia y la fuente del sistema. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 /* Layout: una sola pantalla con red de nodos animada al fondo (dos grupos, azul y morado),
    título grande arriba y una rejilla de 10 temas; cada tema abre un pop-up con resumen y video. */
+/* COLORES Y FUENTES: cambiando estos valores se cambia la paleta de todo el sitio. */
 :root {
   --bg: #0a0b26;
   --bg-2: #14123f;
@@ -26,6 +28,7 @@
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: dark;
 }
+/* Reinicio básico y fondo general de la página (degradados azul y morado sobre azul muy oscuro). */
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body {
@@ -43,17 +46,22 @@ body {
   padding-block: 40px 56px;
   overflow-x: hidden;
 }
+/* body.locked: lo activa el JavaScript mientras el pop-up está abierto, para que la página de atrás no se desplace. */
 body.locked { overflow: hidden; }
+/* Lienzo del fondo animado: ocupa toda la pantalla, queda detrás del contenido y no bloquea los clics. */
 #net { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+/* Contenedor principal centrado (queda por encima del fondo). */
 main { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
 
 /* Encabezado */
 header { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding-block: 28px 44px; }
+/* Texto pequeño sobre el título, con una línea de color al inicio. */
 .eyebrow {
   font-size: 0.8rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-soft);
   display: inline-flex; align-items: center; gap: 12px;
 }
 .eyebrow::before { content: ""; width: 38px; height: 2px; background: linear-gradient(90deg, var(--blue), var(--violet)); }
+/* Título principal. La clase .shine le da el degradado azul-morado que se desplaza lentamente. */
 h1 {
   font-family: var(--font-display); font-weight: 800; margin: 0;
   font-size: clamp(2rem, 8.6vw, 5.6rem); line-height: 1.02; letter-spacing: -0.015em; text-wrap: balance;
@@ -65,13 +73,16 @@ h1 .shine {
   -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: shine 7s linear infinite;
 }
+/* Descripción bajo el título y pista "Elige un tema" (su punto morado late). */
 .lead { max-width: 58ch; color: var(--muted); font-size: 1.08rem; margin: 0; }
 .hint { display: inline-flex; align-items: center; gap: 10px; color: var(--violet-soft); font-size: 0.92rem; }
 .hint i { width: 8px; height: 8px; border-radius: 50%; background: var(--violet); box-shadow: 0 0 0 0 rgba(155,92,255,.7); animation: pulse 2.2s infinite; }
 
 /* Rejilla de temas */
+/* Rejilla de temas: se acomoda sola en 5, 2 o 1 columnas según el ancho de la pantalla. */
 .grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
 .grid li { min-width: 0; }
+/* Botón de cada tema (tarjeta). --a es su color de acento (alterna azul y morado); --i es su orden, que escalona la animación de entrada. */
 .topic {
   --a: var(--blue); --b: var(--violet);
   position: relative; width: 100%; height: 100%; min-height: 176px; text-align: left; cursor: pointer;
@@ -83,13 +94,16 @@ h1 .shine {
   animation: rise .7s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 70ms + 250ms);
 }
 .grid li:nth-child(even) .topic { --a: var(--violet); --b: var(--blue); }
+/* Brillo que sigue al puntero dentro de la tarjeta (se ve al pasar el mouse). */
 .topic::before {
   content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .35s;
   background: radial-gradient(260px 160px at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--a) 38%, transparent), transparent 70%);
 }
+/* Al pasar el mouse o enfocar con teclado: la tarjeta sube y se ilumina. */
 .topic:hover, .topic:focus-visible { transform: translateY(-6px); border-color: var(--a); box-shadow: 0 18px 40px -16px color-mix(in srgb, var(--a) 70%, transparent); }
 .topic:hover::before, .topic:focus-visible::before { opacity: 1; }
 .topic:focus-visible { outline: 2px solid var(--blue-soft); outline-offset: 3px; }
+/* Número del tema: solo contorno, sin relleno. */
 .topic .num {
   position: relative; font-family: var(--font-display); font-weight: 800; font-size: 3.1rem; line-height: 1;
   color: transparent; -webkit-text-stroke: 1.5px var(--a); font-variant-numeric: tabular-nums;
@@ -102,6 +116,7 @@ h1 .shine {
 .topic:hover .go svg { transform: translateX(5px); }
 .topic:hover .go { color: var(--fg); }
 
+/* POP-UP: fondo oscuro desenfocado (.overlay) y ventana (.modal). Está oculto hasta que el JavaScript le agrega la clase .open. */
 /* Pop-up */
 .overlay {
   position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
@@ -118,51 +133,35 @@ h1 .shine {
   transform: translateY(28px) scale(.96); transition: transform .45s cubic-bezier(.2,.9,.2,1);
 }
 .overlay.open .modal { transform: none; }
+/* Franja de color animada en el borde superior de la ventana. */
 .modal::before {
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; border-radius: 18px 18px 0 0;
   background: linear-gradient(90deg, var(--blue), var(--violet), var(--blue)); background-size: 200% 100%; animation: shine 5s linear infinite;
 }
+/* Botón para cerrar (X); gira al pasar el mouse. */
 .close {
   position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
   background: rgba(155,188,255,.1); border: 1px solid var(--line); color: var(--fg); display: grid; place-items: center;
   transition: background .2s, transform .3s;
 }
 .close:hover { background: rgba(155,92,255,.35); transform: rotate(90deg); }
-.close:focus-visible, .nav button:focus-visible, .video:focus-visible, .alt:focus-visible { outline: 2px solid var(--blue-soft); outline-offset: 3px; }
+.close:focus-visible, .nav button:focus-visible, .alt:focus-visible { outline: 2px solid var(--blue-soft); outline-offset: 3px; }
+/* Contenido del pop-up: etiqueta "Tema X de 10", título, párrafos del resumen y etiquetas (chips). */
 .m-eyebrow { font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; color: var(--violet-soft); padding-right: 48px; }
 .modal h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.5rem, 4.6vw, 2.2rem); line-height: 1.1; margin: 8px 0 16px; text-wrap: balance; padding-right: 36px; }
 .modal p { margin: 0 0 14px; max-width: 65ch; color: #dfe1ff; }
 .chips { list-style: none; margin: 4px 0 22px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .chips li { font-size: .84rem; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: rgba(77,141,255,.12); color: var(--blue-soft); }
 .chips li:nth-child(even) { background: rgba(155,92,255,.14); color: var(--violet-soft); }
+/* Zona del video: el marco .player mantiene la proporción 16:9 y el iframe de YouTube lo llena por completo. */
 .videos { display: grid; gap: 12px; }
-.video {
-  display: flex; align-items: center; gap: 16px; padding: 14px; border-radius: 14px; text-decoration: none; color: var(--fg);
-  background: linear-gradient(120deg, rgba(77,141,255,.22), rgba(155,92,255,.26)); border: 1px solid var(--line);
-  transition: transform .3s, border-color .3s, box-shadow .3s;
-}
-.video:hover { transform: translateY(-3px); border-color: var(--violet-soft); box-shadow: 0 14px 34px -16px var(--violet); }
-.play { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--blue), var(--violet)); position: relative; }
-.play::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--violet-soft); animation: ring 2.2s ease-out infinite; }
-.play svg { width: 26px; height: 26px; margin-left: 4px; fill: #fff; }
 .player { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(120deg, #1d3a8a, #4a2a9e); }
-.player img, .player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
-.player .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,11,38,.05) 40%, rgba(10,11,38,.85)); pointer-events: none; }
-.player .pbtn { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; color: #fff; }
-.player .pbtn .play { width: 72px; height: 72px; transition: transform .3s; }
-.player .pbtn:hover .play { transform: scale(1.1); }
-.player .pbtn:focus-visible { outline: 2px solid var(--blue-soft); outline-offset: -4px; }
-.player .cap { position: absolute; left: 14px; right: 14px; bottom: 10px; text-align: left; pointer-events: none; font-size: .9rem; display: flex; flex-direction: column; }
-.player .cap b { font-weight: 600; }
-.player .cap span { color: var(--muted); font-size: .8rem; }
-.v-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.v-label { font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: var(--blue-soft); }
-.v-title { font-weight: 600; overflow-wrap: anywhere; }
-.v-meta { font-size: .85rem; color: var(--muted); }
+.player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .vbox { display: flex; flex-direction: column; gap: 8px; }
 .vcap { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; font-size: .88rem; color: var(--muted); }
 .alt { display: inline-block; font-size: .9rem; color: var(--violet-soft); text-underline-offset: 3px; }
 .alt:hover { color: #fff; }
+/* Botones "anterior" y "siguiente" al pie del pop-up. */
 .nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
 .nav button {
   font: inherit; font-size: .9rem; cursor: pointer; padding: 9px 16px; border-radius: 999px; color: var(--fg);
@@ -170,18 +169,20 @@ h1 .shine {
 }
 .nav button:hover { background: rgba(77,141,255,.18); border-color: var(--blue); }
 
+/* Animaciones: shine = degradado que se desplaza, rise = entrada desde abajo, pulse = punto que late. */
 @keyframes shine { to { background-position: -250% 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
 @keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(155,92,255,0); } 100% { box-shadow: 0 0 0 0 rgba(155,92,255,0); } }
 @keyframes ring { from { transform: scale(1); opacity: .9; } to { transform: scale(1.5); opacity: 0; } }
+/* Entrada escalonada de los elementos del encabezado al cargar la página. */
 header > * { animation: rise .8s cubic-bezier(.2,.8,.2,1) both; }
 header > :nth-child(2) { animation-delay: .1s; } header > :nth-child(3) { animation-delay: .2s; } header > :nth-child(4) { animation-delay: .3s; }
 
+/* Ajustes para celular. */
 @media (max-width: 520px) {
   .modal { padding: 22px 18px 18px; }
-  .video { padding: 12px; gap: 12px; }
-  .play { width: 52px; height: 52px; }
 }
+/* Si la persona pidió menos movimiento en su sistema, se apagan animaciones y transiciones. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -189,17 +190,21 @@ header > :nth-child(2) { animation-delay: .1s; } header > :nth-child(3) { animat
 
 </head>
 <body>
+<!-- Lienzo del fondo animado (lo dibuja el script del final del archivo). -->
 <canvas id="net" aria-hidden="true"></canvas>
+<!-- Página principal: título y rejilla de temas. -->
 <main>
   <header>
-    <span class="eyebrow">Psicología de los grupos</span>
+    <span class="eyebrow">Psicología de los grupos </span>
     <h1><span class="line">La perspectiva</span><span class="line shine">intergrupalista</span></h1>
     <p class="lead">Del declive de la psicología de los grupos al grupo como identidad: Tajfel, Turner, Moscovici y las escuelas europeas.</p>
     <span class="hint"><i></i>Elige un tema para ver su resumen y su video</span>
   </header>
+  <!-- La rejilla está vacía aquí: JavaScript crea un botón por cada tema de la lista TOPICS. -->
   <ol class="grid" id="grid"></ol>
 </main>
 
+<!-- Pop-up. Está oculto hasta elegir un tema; la función show() llena sus textos y el video. -->
 <div class="overlay" id="overlay" aria-hidden="true">
   <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" tabindex="-1">
     <button class="close" id="close" aria-label="Cerrar">
@@ -217,65 +222,80 @@ header > :nth-child(2) { animation-delay: .1s; } header > :nth-child(3) { animat
   </div>
 </div>
 
+<!-- Todo el comportamiento del sitio está en el script de abajo. -->
 <script>
-var SEARCH = "https://www.youtube.com/results?sp=EgIYAQ%253D%253D&search_query=";
+/* =====================================================================
+   CONTENIDO DE LOS TEMAS (aquí se editan todos los textos y los videos)
+   Cada tema tiene:
+     name   -> texto del botón en la portada
+     title  -> título del pop-up
+     body   -> párrafos del resumen (un elemento de la lista por párrafo)
+     chips  -> etiquetas cortas debajo del resumen
+     videos -> lista de videos del tema:
+                 id    = código que aparece después de "v=" en la URL de YouTube
+                 start = segundo en que inicia (opcional; 20:45 = 1245)
+                 title / ch = texto que se muestra bajo el video
+   Para cambiar un video basta con cambiar su id (y start si hace falta).
+   ===================================================================== */
 var TOPICS = [
   { name: "Declive de la psicología de los grupos", title: "Declive de la psicología de los grupos y cambio de perspectivas en los años setenta",
     body: ["El estudio de los grupos fue central en los años cuarenta y cincuenta, pero en los sesenta la investigación empezó a declinar. Influyeron el clima sociopolítico, la escasez de fondos (los militares habían financiado buena parte de la dinámica de grupos), la revolución cognitiva y varios desengaños sobre lo que el estudio de grupos podía resolver.",
            "Simpson y Wood (1991) resumen ocho motivos del declive. En los setenta hubo un cambio modesto: más teorías cognitivas, más variables ambientales y más investigación aplicada. Steiner (1983) concluyó que se había perdido de vista al grupo como unidad con dinámica propia."],
     chips: ["Steiner", "Revolución cognitiva", "Ocho motivos", "Fondos militares"],
-    q: "psicología de los grupos declive años setenta Steiner", videos: [{ id: "srByMrso6eQ", start: 1245, title: "Psicología de los grupos (desde el minuto 20:45)", ch: "YouTube" }] },
+    videos: [{ id: "srByMrso6eQ", start: 1245, title: "Psicología de los grupos (desde el minuto 20:45)", ch: "YouTube" }] },
   { name: "Psicología europea de los grupos", title: "La irrupción de la psicología europea de los grupos",
     body: ["La psicología de los grupos en Europa siguió su propio camino, distinto del norteamericano. Rijsman (1990) lo resume en dos ideas: las bases intersubjetivas del conocimiento (influencia social y representaciones sociales de Moscovici) y las dinámicas de comparación entre sí mismo y los otros (Tajfel, Doise, Turner).",
            "El capítulo llama perspectiva intergrupalista a esta corriente. Reúne dos modelos, el cognitivo de la escuela de Bristol y el sociológico de la escuela francesa de Moscovici, a los que se suma la escuela ginebrina de Doise, Deschamps y Mugny."],
     chips: ["Rijsman (1990)", "Tajfel", "Moscovici", "Tres escuelas"],
-    q: "psicología social europea Tajfel Moscovici", videos: [{ id: "n-PlGtUYj6g", title: "Teoría de la identidad social - Henri Tajfel", ch: "YouTube" }] },
+    videos: [{ id: "n-PlGtUYj6g", title: "Teoría de la identidad social - Henri Tajfel", ch: "YouTube" }] },
   { name: "Escuela de Bristol: Henry Tajfel", title: "La Escuela de Bristol: Henry Tajfel y la evolución de su pensamiento",
     body: ["Henry Tajfel, judío polaco, sobrevivió a un campo de prisioneros nazi, trabajó con la ONU en la rehabilitación de jóvenes tras la guerra y estudió psicología en Inglaterra. Sus primeros trabajos sobre estimación perceptiva mostraron que los valores sesgan la percepción social.",
            "De ahí pasó de la categorización individual a la dimensión intergrupal. Publicó Differentiation between social groups (1978) y su obra principal, Human Groups and Social Categories (1981). Turner y sus estudiantes continuaron con la autocategorización."],
     chips: ["Estimación perceptiva", "Categorización", "1981", "Turner"],
-    q: "Tajfel paradigma del grupo mínimo", videos: [{ id: "1ONoIqabYp4", title: "Paradigma del grupo mínimo", ch: "Elena Moreno" }] },
+    videos: [{ id: "1ONoIqabYp4", title: "Paradigma del grupo mínimo", ch: "Elena Moreno" }] },
   { name: "Teoría de la identidad social", title: "La teoría de la identidad social",
     body: ["Con el paradigma de grupo mínimo, Tajfel mostró que basta dividir a las personas en categorías para que favorezcan al propio grupo, sin conflicto de intereses. La identidad social es el conocimiento de pertenecer a ciertos grupos junto con el valor emocional de esa pertenencia.",
            "La categorización acentúa las diferencias entre grupos y las semejanzas dentro del grupo. La secuencia es categorización, identidad social, comparación social y diferenciación endogrupal positiva. Según haya alternativas y fronteras permeables o no, se elige movilidad, creatividad social o competición social."],
     chips: ["Grupo mínimo", "Endogrupo / exogrupo", "Comparación social", "Movilidad y creatividad"],
-    q: "teoría de la identidad social Tajfel", videos: [{ id: "egV7FyletWs", title: "Teoría de la identidad social de Henri Tajfel", ch: "Miguel Rodriguez" }] },
+    videos: [{ id: "egV7FyletWs", title: "Teoría de la identidad social de Henri Tajfel", ch: "Miguel Rodriguez" }] },
   { name: "Aportaciones y críticas a la TIS", title: "Aportaciones y críticas a la teoría de la identidad social",
     body: ["Se criticó su alcance y universalidad: el favoritismo endogrupal no aparece igual en todas las culturas ni en todos los grupos, y los instrumentos del grupo mínimo no separan bien unas estrategias de otras. El cruce de categorías sigue siendo un debate abierto.",
            "Aun así, la teoría renovó la psicología social y de los grupos, dio contenido empírico a fenómenos como la discriminación y abrió nuevas teorías. Sus seguidores añadieron factores como el poder y el estatus."],
     chips: ["Universalidad", "Cruce de categorías", "Poder y estatus", "Renovación"],
-    q: "críticas teoría de la identidad social Tajfel", videos: [{ id: "fsPsa-JOvAw", title: "Teoría de la identidad social", ch: "YouTube" }] },
+    videos: [{ id: "fsPsa-JOvAw", title: "Teoría de la identidad social", ch: "YouTube" }] },
   { name: "Autocategorización de Turner", title: "La teoría de la autocategorización de Turner",
     body: ["Turner explica cómo las personas llegan a actuar como grupo. Se apoya en tres supuestos: el autoconcepto formado por categorizaciones del yo, tres niveles de categorización (humano, grupal y personal) y el postulado valorativo, que empuja a valorar positivamente las categorías propias.",
            "Con el metacontraste, una categoría se vuelve saliente según el contexto. Cuando domina el nivel grupal ocurre la despersonalización, que no es perder la identidad sino cambiar su nivel, y de ahí la autoestereotipia: asumir las características del grupo como propias."],
     chips: ["Metacontraste", "Prototipicalidad", "Despersonalización", "Autoestereotipia"],
-    q: "teoría de la autocategorización Turner", videos: [{ id: "vuO8JfoH4tM", title: "Autoconcepto e identidad social: fundamentos psicosociales", ch: "YouTube" }] },
+    videos: [{ id: "vuO8JfoH4tM", title: "Autoconcepto e identidad social: fundamentos psicosociales", ch: "YouTube" }] },
   { name: "Implicaciones y críticas", title: "Implicaciones y críticas de la perspectiva de la identidad social",
     body: ["La TIS y la autocategorización generaron mucha investigación sobre grupos, prejuicio, estereotipos y autoconcepto. También recibieron críticas: que son más una perspectiva que una teoría contrastable y que la despersonalización descuida la interacción interpersonal.",
            "Brewer propuso la distintividad óptima: necesitamos pertenecer y, a la vez, ser únicos. Hogg y otros destacaron la reducción de la incertidumbre. Turner (1999) respondió que la identificación no causa de forma directa el sesgo endogrupal."],
     chips: ["Distintividad óptima", "Incertidumbre", "Respuesta de Turner", "Autoestima"],
-    q: "teoría de la distintividad óptima Brewer", videos: [{ id: "doln7hHexXQ", title: "Teoría de la identidad social de Tajfel: ¿qué es la identidad social?", ch: "YouTube" }] },
+    videos: [{ id: "doln7hHexXQ", title: "Teoría de la identidad social de Tajfel: ¿qué es la identidad social?", ch: "YouTube" }] },
   { name: "Nuevas direcciones empíricas", title: "Nuevas direcciones empíricas",
     body: ["La perspectiva se aplicó a normas y relación entre actitudes y conducta, persuasión, influencia de mayorías y minorías, liderazgo, estereotipos y prejuicios. Una idea común: la actitud predice mejor la conducta cuando es norma del grupo que importa para la identidad.",
            "También llegó a las organizaciones y se relacionó con la teoría de la dominación social de Sidanius. La escuela de Amsterdam estudió estrategias de identidad según la posición del grupo."],
     chips: ["Normas", "Liderazgo", "Organizaciones", "Escuela de Amsterdam"],
-    q: "identidad social liderazgo organizaciones Hogg", videos: [{ id: "laXU8qg86Es", title: "Psicología de las organizaciones: liderazgo, influencia social y poder", ch: "YouTube" }] },
+    videos: [{ id: "laXU8qg86Es", title: "Psicología de las organizaciones: liderazgo, influencia social y poder", ch: "YouTube" }] },
   { name: "Escuelas Francesa y Ginebrina", title: "La Escuela Francesa y la Escuela Ginebrina",
     body: ["Moscovici, con formación sociológica, creó la teoría de las representaciones sociales: formas de conocimiento que las personas y los grupos producen en la interacción y que crean identidad grupal. También propuso la teoría de las minorías activas, donde una minoría consistente puede influir en la mayoría.",
            "La escuela ginebrina (Doise, Deschamps, Mugny) articuló cuatro niveles de explicación: intraindividual, interindividual, posicional e ideológico, y desarrolló la influencia minoritaria."],
     chips: ["Representaciones sociales", "Minorías activas", "Cuatro niveles", "Doise y Mugny"],
-    q: "Moscovici minorías activas representaciones sociales",
     videos: [{ id: "eBn7lCr9vVE", title: "Representaciones sociales", ch: "Resumenes Entelekia" }, { id: "12sY3uQtXj8", title: "Experimentos sociales: la influencia minoritaria", ch: "YouTube" }] },
   { name: "El grupo como identidad", title: "El grupo como identidad",
     body: ["Desde esta perspectiva, un grupo existe cuando sus miembros se perciben como tales. Tajfel distingue un componente cognitivo (saberse miembro), uno evaluativo (valorar esa pertenencia) y uno emocional. Bar-Tal añade que el grupo exige compartir la creencia de que somos un grupo.",
            "Wilder y Simon (1998) señalan cinco implicaciones, entre ellas que el grupo es un constructo cognitivo que simplifica el mundo social. Las críticas apuntan a la multiplicidad de la identidad y a la cultura, y Turner respondió a ellas."],
     chips: ["Cognitivo · evaluativo · emocional", "Bar-Tal", "Wilder y Simon", "Cultura"],
-    q: "identidad social grupo pertenencia psicología social", videos: [{ id: "sD2ObpZE0y8", title: "Psicología Social, Identidad Social", ch: "YouTube" }] }
+    videos: [{ id: "sD2ObpZE0y8", title: "Psicología Social, Identidad Social", ch: "YouTube" }] }
 ];
 
+// Atajo para document.getElementById.
 var $ = function (id) { return document.getElementById(id); };
+// Referencias a elementos. current = tema abierto (-1 = ninguno); lastFocus = botón al que vuelve el foco al cerrar.
 var grid = $("grid"), overlay = $("overlay"), modal = $("modal"), current = -1, lastFocus = null;
 
+// Crea un botón por cada tema dentro de la rejilla (número, nombre y flecha).
 grid.innerHTML = TOPICS.map(function (t, i) {
   return '<li><button type="button" class="topic" style="--i:' + i + '" data-i="' + i + '">' +
     '<span class="num">' + String(i + 1).padStart(2, "0") + '</span>' +
@@ -284,40 +304,49 @@ grid.innerHTML = TOPICS.map(function (t, i) {
     '</button></li>';
 }).join("");
 
+// Guarda la posición del puntero dentro de la tarjeta para dibujar el brillo que lo sigue.
 grid.addEventListener("pointermove", function (e) {
   var b = e.target.closest(".topic"); if (!b) return;
   var r = b.getBoundingClientRect();
   b.style.setProperty("--mx", (e.clientX - r.left) + "px");
   b.style.setProperty("--my", (e.clientY - r.top) + "px");
 });
+// Al hacer clic en un tema se abre su pop-up.
 grid.addEventListener("click", function (e) {
   var b = e.target.closest(".topic"); if (b) { lastFocus = b; show(+b.dataset.i); }
 });
 
+// Abre el pop-up del tema i: llena título, resumen, etiquetas y video, y configura anterior/siguiente.
 function show(i) {
   var t = TOPICS[i]; current = i;
   $("m-eyebrow").textContent = "Tema " + (i + 1) + " de " + TOPICS.length;
   $("m-title").textContent = t.title;
   $("m-body").innerHTML = t.body.map(function (p) { return "<p>" + p + "</p>"; }).join("");
   $("m-chips").innerHTML = t.chips.map(function (c) { return "<li>" + c + "</li>"; }).join("");
+  // Inserta el reproductor de YouTube (iframe) y un enlace de respaldo. Si el video trae "start", inicia en ese segundo.
   $("m-videos").innerHTML = t.videos.map(function (v) {
     return '<div class="vbox"><div class="player"><iframe src="https://www.youtube.com/embed/' + v.id + (v.start ? "?start=" + v.start : "") + '" title="' + v.title + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>' +
       '<div class="vcap"><span>' + v.title + '</span><a class="alt" href="https://www.youtube.com/watch?v=' + v.id + (v.start ? "&t=" + v.start + "s" : "") + '" target="_blank" rel="noopener noreferrer">¿No carga? Ábrelo en una pestaña nueva</a></div></div>';
   }).join("");
+  // Nombres de los botones anterior/siguiente (dan la vuelta: después del tema 10 sigue el 1).
   var p = TOPICS[(i + TOPICS.length - 1) % TOPICS.length], n = TOPICS[(i + 1) % TOPICS.length];
   $("prev").textContent = "← " + p.name; $("next").textContent = n.name + " →";
   $("prev").title = p.name; $("next").title = n.name;
+  // Muestra el pop-up, bloquea el scroll de la página y enfoca el botón de cerrar (accesibilidad).
   overlay.classList.add("open"); overlay.setAttribute("aria-hidden", "false"); document.body.classList.add("locked");
   modal.scrollTop = 0; setTimeout(function () { $("close").focus(); }, 60);
 }
+// Cierra el pop-up. Se vacía el contenedor del video para que deje de reproducirse.
 function hide() {
   $("m-videos").innerHTML = ""; overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true"); document.body.classList.remove("locked");
   current = -1; if (lastFocus) lastFocus.focus();
 }
+// Formas de cerrar o navegar: botón X, clic fuera de la ventana y botones anterior/siguiente.
 $("close").addEventListener("click", hide);
 overlay.addEventListener("click", function (e) { if (e.target === overlay) hide(); });
 $("prev").addEventListener("click", function () { show((current + TOPICS.length - 1) % TOPICS.length); });
 $("next").addEventListener("click", function () { show((current + 1) % TOPICS.length); });
+// Teclado: Esc cierra, las flechas cambian de tema y Tab se queda dentro del pop-up.
 document.addEventListener("keydown", function (e) {
   if (current < 0) return;
   if (e.key === "Escape") hide();
@@ -330,53 +359,164 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-/* Red de nodos: dos grupos (azul y morado) que se atraen dentro del propio grupo */
+/* =====================================================================
+   FONDO ANIMADO: constelaciones que se transforman
+   - Hay "nodos constelación" (12, más grandes) que viajan suavemente a los
+     puntos de una figura y se unen con líneas. Cada cierto tiempo la figura
+     se deshace y los mismos nodos forman otra.
+   - Además hay "nodos ambientales" (pequeños) que flotan por la pantalla y se
+     unen entre sí cuando están cerca; los del mismo color se atraen más
+     (azul = un grupo, morado = otro grupo).
+   ===================================================================== */
 (function () {
-  var cv = $("net"), cx = cv.getContext("2d"), W = 0, H = 0, nodes = [], mouse = { x: -999, y: -999 };
-  var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var COL = ["77,141,255", "155,92,255"];
+  var cv = $("net"), cx = cv.getContext("2d");          // lienzo y su contexto de dibujo
+  var W = 0, H = 0;                                      // ancho y alto de la ventana
+  var COL = ["77,141,255", "155,92,255"];               // 0 = azul, 1 = morado (formato R,G,B)
+  var mouse = { x: -999, y: -999 };                      // posición del puntero (los nodos ambientales lo esquivan)
+  var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches; // si el usuario pide menos movimiento
+  var HOLD = 8000;                                       // milisegundos que dura cada figura antes de transformarse
+  var N = 12;                                            // nodos constelación (todas las figuras usan 12 puntos)
+
+  /* ---- Figuras: cada una da 12 puntos (x, y entre 0 y 1) y las líneas que los unen ---- */
+  function ring(cx0, cy0, r, n, start) {                 // n puntos sobre un círculo
+    var out = [];
+    for (var k = 0; k < n; k++) { var an = start + k * 2 * Math.PI / n; out.push([cx0 + r * Math.cos(an) * .55, cy0 + r * Math.sin(an)]); }
+    return out;
+  }
+  var SHAPES = [];
+
+  // 1) Dos grupos: dos "estrellas" de 6 nodos. Índices pares = grupo azul, impares = grupo morado
+  (function () {
+    var A = ring(.24, .5, .34, 5, -Math.PI / 2), B = ring(.76, .5, .34, 5, -Math.PI / 2), pts = [], e = [];
+    pts[0] = [.24, .5]; pts[1] = [.76, .5];
+    for (var k = 0; k < 5; k++) { pts[2 + k * 2] = A[k]; pts[3 + k * 2] = B[k]; }
+    for (var j = 0; j < 5; j++) {
+      e.push([0, 2 + j * 2], [1, 3 + j * 2]);                                          // rayos desde el centro
+      e.push([2 + j * 2, 2 + ((j + 1) % 5) * 2], [3 + j * 2, 3 + ((j + 1) % 5) * 2]);  // contorno
+    }
+    SHAPES.push({ pts: pts, edges: e });
+  })();
+
+  // 2) Anillo: un círculo con tres diámetros (idea de identidad compartida)
+  (function () {
+    var pts = ring(.5, .5, .46, 12, 0), e = [];
+    for (var k = 0; k < 12; k++) e.push([k, (k + 1) % 12]);
+    e.push([0, 6], [2, 8], [4, 10]);
+    SHAPES.push({ pts: pts, edges: e });
+  })();
+
+  // 3) Casiopea: zigzag en forma de W
+  (function () {
+    var ys = [.7, .3, .65, .25, .6, .35, .7, .28, .62, .3, .66, .34], pts = [], e = [];
+    for (var k = 0; k < 12; k++) { pts.push([.04 + k * .084, ys[k]]); if (k) e.push([k - 1, k]); }
+    SHAPES.push({ pts: pts, edges: e });
+  })();
+
+  // 4) Orión: cabeza, hombros, cinturón de tres estrellas, pies, espada y brazos
+  SHAPES.push({
+    pts: [[.5, .08], [.3, .18], [.7, .2], [.4, .5], [.5, .52], [.6, .5], [.28, .88], [.72, .84], [.5, .68], [.12, .35], [.88, .38], [.08, .62]],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 5], [3, 4], [4, 5], [3, 6], [5, 7], [4, 8], [1, 9], [2, 10], [9, 11]]
+  });
+
+  // 5) Jerarquía: árbol de 1 + 2 + 4 + 5 nodos
+  SHAPES.push({
+    pts: [[.5, .08], [.25, .38], [.75, .38], [.12, .66], [.38, .66], [.62, .66], [.88, .66], [.06, .94], [.26, .94], [.46, .94], [.7, .94], [.92, .94]],
+    edges: [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5], [2, 6], [3, 7], [3, 8], [4, 9], [5, 10], [6, 11]]
+  });
+
+  var stars = [], ambient = [];                          // nodos constelación y nodos ambientales
+  var shapeIdx = 0, shown = SHAPES[0], switchAt = 0;     // figura actual, figura cuyas líneas se dibujan, momento del último cambio
+
+  // Convierte un punto de la figura (0 a 1) en una posición de pantalla, con una leve oscilación
+  function place(p, t) {
+    var bx = W * .06, by = H * .14, bw = W * .88, bh = H * .72;
+    return { x: bx + p[0] * bw + Math.sin(t / 2600 + p[1] * 6) * 7, y: by + p[1] * bh + Math.cos(t / 3100 + p[0] * 6) * 7 };
+  }
+
+  // Crea los nodos según el tamaño de la ventana (se vuelve a llamar al redimensionar)
   function size() {
-    var d = Math.min(window.devicePixelRatio || 1, 2);
+    var d = Math.min(window.devicePixelRatio || 1, 2);   // nitidez en pantallas de alta densidad
     W = window.innerWidth; H = window.innerHeight;
     cv.width = W * d; cv.height = H * d; cx.setTransform(d, 0, 0, d, 0, 0);
-    var n = Math.max(26, Math.min(90, Math.round(W * H / 15000)));
-    nodes = [];
-    for (var i = 0; i < n; i++) {
-      var g = i % 2;
-      nodes.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35, g: g, r: 1.6 + Math.random() * 1.8 });
+    stars = [];
+    for (var i = 0; i < N; i++) {
+      var p = place(SHAPES[shapeIdx].pts[i], 0);
+      stars.push({ x: still ? p.x : Math.random() * W, y: still ? p.y : Math.random() * H, g: i % 2 });
+    }
+    ambient = [];
+    var n = Math.max(16, Math.min(55, Math.round(W * H / 22000)));
+    for (var k = 0; k < n; k++) {
+      ambient.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35, g: k % 2, r: 1.2 + Math.random() * 1.4 });
     }
   }
-  function frame() {
+
+  // Dibuja las líneas de una figura con la transparencia indicada
+  function drawEdges(shape, alpha) {
+    if (alpha <= 0.01) return;
+    for (var k = 0; k < shape.edges.length; k++) {
+      var a = stars[shape.edges[k][0]], b = stars[shape.edges[k][1]];
+      cx.strokeStyle = "rgba(" + COL[a.g] + "," + (.55 * alpha) + ")";
+      cx.lineWidth = 1.3;
+      cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke();
+    }
+  }
+
+  // Un cuadro de la animación (t = milisegundos desde que cargó la página)
+  function frame(t) {
     cx.clearRect(0, 0, W, H);
-    for (var i = 0; i < nodes.length; i++) {
-      var a = nodes[i];
+
+    // a) ¿toca cambiar de figura?
+    if (!still && t - switchAt > HOLD) { shapeIdx = (shapeIdx + 1) % SHAPES.length; switchAt = t; }
+    var dt = t - switchAt, target = SHAPES[shapeIdx];
+    // Las líneas de la figura vieja se desvanecen (0 a 0.6 s), no hay líneas mientras los nodos viajan,
+    // y las de la figura nueva aparecen cuando ya casi llegaron (desde 2.2 s)
+    if (dt >= 600) shown = target;
+    var alpha = dt < 600 ? 1 - dt / 600 : (dt < 2200 ? 0 : Math.min(1, (dt - 2200) / 900));
+    if (still) alpha = 1;
+
+    // b) mover los nodos constelación hacia su punto en la figura actual (movimiento suavizado)
+    for (var i = 0; i < N; i++) {
+      var p = place(target.pts[i], still ? 0 : t), s = stars[i];
+      s.x += (p.x - s.x) * (still ? 1 : .03);
+      s.y += (p.y - s.y) * (still ? 1 : .03);
+    }
+    drawEdges(shown, alpha);
+
+    // c) nodos ambientales: se mueven, esquivan el puntero y se unen si están cerca
+    for (var m = 0; m < ambient.length; m++) {
+      var a = ambient[m];
       if (!still) {
         var dx = a.x - mouse.x, dy = a.y - mouse.y, d2 = dx * dx + dy * dy;
-        if (d2 < 14000) { var f = (1 - d2 / 14000) * .6; a.vx += dx / Math.sqrt(d2 + 1) * f * .08; a.vy += dy / Math.sqrt(d2 + 1) * f * .08; }
+        if (d2 < 14000) { var f = (1 - d2 / 14000) * .6, dd = Math.sqrt(d2 + 1); a.vx += dx / dd * f * .08; a.vy += dy / dd * f * .08; }
         a.vx *= .995; a.vy *= .995;
         a.x += a.vx; a.y += a.vy;
-        if (a.x < -10) a.x = W + 10; if (a.x > W + 10) a.x = -10;
+        if (a.x < -10) a.x = W + 10; if (a.x > W + 10) a.x = -10;   // al salir por un borde reaparece por el opuesto
         if (a.y < -10) a.y = H + 10; if (a.y > H + 10) a.y = -10;
       }
-      for (var j = i + 1; j < nodes.length; j++) {
-        var b = nodes[j], ex = a.x - b.x, ey = a.y - b.y, dist = Math.sqrt(ex * ex + ey * ey), lim = a.g === b.g ? 150 : 90;
+      for (var j = m + 1; j < ambient.length; j++) {
+        var b = ambient[j], ex = a.x - b.x, ey = a.y - b.y, dist = Math.sqrt(ex * ex + ey * ey);
+        var lim = a.g === b.g ? 150 : 90;                // mismo grupo: se unen desde más lejos
         if (dist < lim) {
-          var al = (1 - dist / lim) * (a.g === b.g ? .5 : .12);
-          cx.strokeStyle = "rgba(" + COL[a.g === b.g ? a.g : 0] + "," + al + ")";
+          cx.strokeStyle = "rgba(" + COL[a.g === b.g ? a.g : 0] + "," + ((1 - dist / lim) * (a.g === b.g ? .4 : .1)) + ")";
           cx.lineWidth = a.g === b.g ? 1 : .6;
           cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke();
         }
       }
+      cx.fillStyle = "rgba(" + COL[a.g] + ",.75)"; cx.beginPath(); cx.arc(a.x, a.y, a.r, 0, 6.2832); cx.fill();
     }
-    for (var k = 0; k < nodes.length; k++) {
-      var n = nodes[k];
-      cx.fillStyle = "rgba(" + COL[n.g] + ",.9)"; cx.beginPath(); cx.arc(n.x, n.y, n.r, 0, 6.2832); cx.fill();
+
+    // d) estrellas de la constelación: punto brillante con halo
+    for (var q = 0; q < N; q++) {
+      var st = stars[q];
+      cx.fillStyle = "rgba(" + COL[st.g] + ",.18)"; cx.beginPath(); cx.arc(st.x, st.y, 9, 0, 6.2832); cx.fill();
+      cx.fillStyle = "rgba(" + COL[st.g] + ",1)";   cx.beginPath(); cx.arc(st.x, st.y, 2.8, 0, 6.2832); cx.fill();
     }
     if (!still) requestAnimationFrame(frame);
   }
+
   window.addEventListener("pointermove", function (e) { mouse.x = e.clientX; mouse.y = e.clientY; });
-  window.addEventListener("resize", function () { size(); if (still) frame(); });
-  size(); frame();
+  window.addEventListener("resize", function () { size(); if (still) frame(0); });
+  size(); requestAnimationFrame(frame);
 })();
 </script>
 
