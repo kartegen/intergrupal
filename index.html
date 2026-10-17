@@ -224,7 +224,7 @@ var TOPICS = [
     body: ["El estudio de los grupos fue central en los años cuarenta y cincuenta, pero en los sesenta la investigación empezó a declinar. Influyeron el clima sociopolítico, la escasez de fondos (los militares habían financiado buena parte de la dinámica de grupos), la revolución cognitiva y varios desengaños sobre lo que el estudio de grupos podía resolver.",
            "Simpson y Wood (1991) resumen ocho motivos del declive. En los setenta hubo un cambio modesto: más teorías cognitivas, más variables ambientales y más investigación aplicada. Steiner (1983) concluyó que se había perdido de vista al grupo como unidad con dinámica propia."],
     chips: ["Steiner", "Revolución cognitiva", "Ocho motivos", "Fondos militares"],
-    q: "psicología de los grupos declive años setenta Steiner", videos: [{ id: "QHk7pAqJwN4", title: "Aportes de Kurt Lewin a la Psicología de los Grupos", ch: "YouTube" }] },
+    q: "psicología de los grupos declive años setenta Steiner", videos: [{ id: "srByMrso6eQ", start: 1245, title: "Psicología de los grupos (desde el minuto 20:45)", ch: "YouTube" }] },
   { name: "Psicología europea de los grupos", title: "La irrupción de la psicología europea de los grupos",
     body: ["La psicología de los grupos en Europa siguió su propio camino, distinto del norteamericano. Rijsman (1990) lo resume en dos ideas: las bases intersubjetivas del conocimiento (influencia social y representaciones sociales de Moscovici) y las dinámicas de comparación entre sí mismo y los otros (Tajfel, Doise, Turner).",
            "El capítulo llama perspectiva intergrupalista a esta corriente. Reúne dos modelos, el cognitivo de la escuela de Bristol y el sociológico de la escuela francesa de Moscovici, a los que se suma la escuela ginebrina de Doise, Deschamps y Mugny."],
@@ -301,8 +301,8 @@ function show(i) {
   $("m-body").innerHTML = t.body.map(function (p) { return "<p>" + p + "</p>"; }).join("");
   $("m-chips").innerHTML = t.chips.map(function (c) { return "<li>" + c + "</li>"; }).join("");
   $("m-videos").innerHTML = t.videos.map(function (v) {
-    return '<div class="vbox"><div class="player"><iframe src="https://www.youtube.com/embed/' + v.id + '" title="' + v.title + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>' +
-      '<div class="vcap"><span>' + v.title + '</span><a class="alt" href="https://www.youtube.com/watch?v=' + v.id + '" target="_blank" rel="noopener noreferrer">¿No carga? Ábrelo en una pestaña nueva</a></div></div>';
+    return '<div class="vbox"><div class="player"><iframe src="https://www.youtube.com/embed/' + v.id + (v.start ? "?start=" + v.start : "") + '" title="' + v.title + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>' +
+      '<div class="vcap"><span>' + v.title + '</span><a class="alt" href="https://www.youtube.com/watch?v=' + v.id + (v.start ? "&t=" + v.start + "s" : "") + '" target="_blank" rel="noopener noreferrer">¿No carga? Ábrelo en una pestaña nueva</a></div></div>';
   }).join("");
   var p = TOPICS[(i + TOPICS.length - 1) % TOPICS.length], n = TOPICS[(i + 1) % TOPICS.length];
   $("prev").textContent = "← " + p.name; $("next").textContent = n.name + " →";
